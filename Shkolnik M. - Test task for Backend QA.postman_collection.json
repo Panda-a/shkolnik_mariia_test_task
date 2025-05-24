@@ -1,0 +1,700 @@
+{
+	"info": {
+		"_postman_id": "e6f523e4-b8ec-4a4f-9daa-bba7df85340e",
+		"name": "Shkolnik M. - Test task for Backend QA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8074636"
+	},
+	"item": [
+		{
+			"name": "1. Add a new pet to the store",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// generate random pet id",
+							"pm.environment.set(\"newPetId\", Date.now());",
+							"",
+							"// generate random pet name",
+							"const petName = ['Fluffy', 'Spike', 'Luna', 'Coco', 'Shadow', 'Ginger', 'Snowball'];",
+							"const randomPetName = petName[Math.floor(Math.random() * petName.length)];",
+							"",
+							"pm.environment.set(\"randomPetName\", randomPetName);",
+							"",
+							"// generate random pet category",
+							"const petCategory = ['Cat', 'Dog', 'Hamster', 'Parrot', 'Rabbit'];",
+							"const randomPetCategory = petCategory[Math.floor(Math.random() * petCategory.length)];",
+							"",
+							"pm.environment.set(\"randomPetCategory\", randomPetCategory);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"setTimeout(() => {}, 5000); //need this time for run",
+							"",
+							"// check requered fidls",
+							"pm.test(\"Field 'name' is present and not empty\", function () {",
+							"    pm.expect(pm.response.json().name).to.be.a(\"string\").and.not.empty;",
+							"});",
+							"",
+							"pm.test(\"Field 'photoUrls' is present and not empty array\", function () {",
+							"    let photoUrls = pm.response.json().photoUrls;",
+							"    pm.expect(photoUrls).to.be.an(\"array\").that.is.not.empty;",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"{{randomPetName}}\",\n  \"photoUrls\": [\"https://сat.jpg\"],\n  \"id\": {{newPetId}},\n  \"category\": {\n    \"id\": {{randomId}},\n    \"name\": \"{{randomPetCategory}}\"\n  },\n  \"tags\": [\n    {\n      \"id\": {{randomId}},\n      \"name\": \"Ut ut\"\n    }\n  ],\n  \"status\": \"available\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pet",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pet"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Invalid input",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<token>",
+								"description": "Added as a part of security scheme: oauth2"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"doggie\",\n  \"photoUrls\": [\n    \"veniam consectetur proident sint esse\",\n    \"esse et fugiat\"\n  ],\n  \"id\": 78847383,\n  \"category\": {\n    \"id\": 21609669,\n    \"name\": \"veniam sunt sit nisi\"\n  },\n  \"tags\": [\n    {\n      \"id\": -12043389,\n      \"name\": \"Ut ut\"\n    },\n    {\n      \"id\": -20045831,\n      \"name\": \"est\"\n    }\n  ],\n  \"status\": \"sold\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pet",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet"
+							]
+						}
+					},
+					"status": "Method Not Allowed",
+					"code": 405,
+					"_postman_previewlanguage": "text",
+					"header": [],
+					"cookie": [],
+					"body": ""
+				}
+			]
+		},
+		{
+			"name": "2. Find pet by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const res = pm.response.json();",
+							"",
+							"// checked 1st level response fields",
+							"pm.test(\"Response has required fields\", function () {",
+							"    pm.expect(res).to.have.property(\"id\");",
+							"    pm.expect(res).to.have.property(\"category\");",
+							"    pm.expect(res).to.have.property(\"name\");",
+							"    pm.expect(res).to.have.property(\"photoUrls\");",
+							"    pm.expect(res).to.have.property(\"tags\");",
+							"    pm.expect(res).to.have.property(\"status\");",
+							"});",
+							"// checked 2nd level response fields",
+							"pm.test(\"Category is validated\", function () {",
+							"    pm.expect(res.category).to.have.property(\"id\");",
+							"    pm.expect(res.category).to.have.property(\"name\");",
+							"});",
+							"",
+							"pm.test(\"Tags are validated\", function () {",
+							"    res.tags.forEach(function (tag) {",
+							"        pm.expect(tag).to.have.property(\"id\");",
+							"        pm.expect(tag).to.have.property(\"name\");",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/pet/{{newPetId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pet",
+						"{{newPetId}}"
+					]
+				},
+				"description": "Returns a single pet"
+			},
+			"response": [
+				{
+					"name": "successful operation",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "api_key",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/pet/:petId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet",
+								":petId"
+							],
+							"variable": [
+								{
+									"key": "petId"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"name\": \"doggie\",\n  \"photoUrls\": [\n    \"veniam consectetur proident sint esse\",\n    \"esse et fugiat\"\n  ],\n  \"id\": 78847383,\n  \"category\": {\n    \"id\": 21609669,\n    \"name\": \"veniam sunt sit nisi\"\n  },\n  \"tags\": [\n    {\n      \"id\": -12043389,\n      \"name\": \"Ut ut\"\n    },\n    {\n      \"id\": -20045831,\n      \"name\": \"est\"\n    }\n  ],\n  \"status\": \"sold\"\n}"
+				},
+				{
+					"name": "Invalid ID supplied",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api_key",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/pet/:petId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet",
+								":petId"
+							],
+							"variable": [
+								{
+									"key": "petId"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "text",
+					"header": [],
+					"cookie": [],
+					"body": ""
+				},
+				{
+					"name": "Pet not found",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api_key",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/pet/:petId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet",
+								":petId"
+							],
+							"variable": [
+								{
+									"key": "petId"
+								}
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "text",
+					"header": [],
+					"cookie": [],
+					"body": ""
+				}
+			]
+		},
+		{
+			"name": "3. Place an order for a pet",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// set random status",
+							"const statuses = ['placed', 'approved', 'delivered'];",
+							"const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];",
+							"",
+							"pm.environment.set(\"randomOrderStatus\", randomStatus);",
+							"pm.environment.set(\"shipDate\", new Date().toISOString());",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();",
+							"setTimeout(() => {}, 5000);  //need this time for run",
+							"",
+							"pm.environment.set(\"orderId\", pm.response.json().id);",
+							"",
+							"pm.test(\"Status value is valid\", function () {",
+							"    const validStatuses = [\"placed\", \"approved\", \"delivered\"];",
+							"    pm.expect(validStatuses).to.include(response.status);",
+							"});",
+							"",
+							"pm.test(\"Quantity >0\", function () {",
+							"    pm.expect(response.quantity).to.be.above(0);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"petId\": {{newPetId}},\n  \"quantity\": {{randomId}},\n  \"shipDate\": \"{{shipDate}}\",\n  \"status\": \"{{randomOrderStatus}}\",\n  \"complete\": true\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/store/order",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"store",
+						"order"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "successful operation",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 63750228,\n  \"petId\": -56815655,\n  \"quantity\": 56791161,\n  \"shipDate\": \"1981-10-20T12:47:16.680Z\",\n  \"status\": \"delivered\",\n  \"complete\": true\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/store/order",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"store",
+								"order"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"id\": 63750228,\n  \"petId\": -56815655,\n  \"quantity\": 56791161,\n  \"shipDate\": \"1981-10-20T12:47:16.680Z\",\n  \"status\": \"delivered\",\n  \"complete\": true\n}"
+				},
+				{
+					"name": "Invalid Order",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 63750228,\n  \"petId\": -56815655,\n  \"quantity\": 56791161,\n  \"shipDate\": \"1981-10-20T12:47:16.680Z\",\n  \"status\": \"delivered\",\n  \"complete\": true\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/store/order",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"store",
+								"order"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "text",
+					"header": [],
+					"cookie": [],
+					"body": ""
+				}
+			]
+		},
+		{
+			"name": "4. Delete purchase order by ID",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/store/order/{{orderId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"store",
+						"order",
+						"{{orderId}}"
+					]
+				},
+				"description": "For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors"
+			},
+			"response": [
+				{
+					"name": "Invalid ID supplied",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/store/order/:orderId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"store",
+								"order",
+								":orderId"
+							],
+							"variable": [
+								{
+									"key": "orderId"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "text",
+					"header": [],
+					"cookie": [],
+					"body": ""
+				},
+				{
+					"name": "Order not found",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/store/order/:orderId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"store",
+								"order",
+								":orderId"
+							],
+							"variable": [
+								{
+									"key": "orderId"
+								}
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "text",
+					"header": [],
+					"cookie": [],
+					"body": ""
+				}
+			]
+		},
+		{
+			"name": "5. Deletes a pet",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "api_key",
+						"value": "elit consect"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/pet/{{newPetId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pet",
+						"{{newPetId}}"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Invalid ID supplied",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "api_key",
+								"value": "elit consect"
+							},
+							{
+								"key": "Authorization",
+								"value": "<token>",
+								"description": "Added as a part of security scheme: oauth2"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/pet/:petId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet",
+								":petId"
+							],
+							"variable": [
+								{
+									"key": "petId"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "text",
+					"header": [],
+					"cookie": [],
+					"body": ""
+				},
+				{
+					"name": "Pet not found",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "api_key",
+								"value": "elit consect"
+							},
+							{
+								"key": "Authorization",
+								"value": "<token>",
+								"description": "Added as a part of security scheme: oauth2"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/pet/:petId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet",
+								":petId"
+							],
+							"variable": [
+								{
+									"key": "petId"
+								}
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "text",
+					"header": [],
+					"cookie": [],
+					"body": ""
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"// set random number for each request",
+					"const randomId = Math.floor(Math.random() * 5) + 1;",
+					"",
+					"pm.environment.set(\"randomId\", randomId);"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"pm.test(\"Status code is 200\", function () {",
+					"    pm.response.to.have.status(200);",
+					"});",
+					"",
+					"pm.test(\"Response time is less than 500ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(500);",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://petstore.swagger.io/v2",
+			"type": "string"
+		}
+	]
+}
